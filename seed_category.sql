@@ -1,0 +1,1 @@
+INSERT INTO category (category_name) VALUES  ('HOT'), ('SNACKS'), ('BEVERAGES'), ('READY TO EAT'),('DAIRIES'), ('HOUSEHOLD') ON CONFLICT (category_name) DO NOTHING;

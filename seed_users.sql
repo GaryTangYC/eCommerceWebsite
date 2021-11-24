@@ -1,0 +1,3 @@
+INSERT INTO users (first_name, last_name, user_address, contact, email, password, created_at) VALUES ('Gary', 'Tang', 'Telok Blangah', '123', 'abc@abc.com', 'abc', '2021-11-22 08:08:08') ON CONFLICT (email) DO NOTHING;
+INSERT INTO users (first_name, last_name, user_address, contact, email, password, created_at) VALUES ('Boon', 'Wee', 'Punggol', '456', 'def@def.com', 'def', '2021-11-23 08:08:08') ON CONFLICT (email) DO NOTHING;
+INSERT INTO users (first_name, last_name, user_address, contact, email, password, created_at) VALUES ('Dom', 'Yeo', 'SPACE', '789', 'ghi@ghi.com', 'ghi', '2021-11-24 08:08:08') ON CONFLICT (email) DO NOTHING;

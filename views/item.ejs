@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <!-- AFTER HTML loads in browser, browser will request for CSS. -->
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+  </head>
+
+  <body>
+    <p><strong>Home Page - All Items</strong></p>
+
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Item Name</th>
+          <th scope="col">Item price</th>
+          <th scope="col">Summary</th>
+          <th scope="col">Weight</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% itemDetails.forEach((item) => { %>
+        <tr>
+          <td><%= item.product_name %></td>
+          <td><%= item.price%></td>
+          <td><%= item.summary %></td>
+          <td><%= item.weight %></td>
+          <td><%= item.status %></td>
+          <% }); %>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+
+  <footer>
+    <p><a href="/">Return to main page</a></p>
+  </footer>
+</html>
