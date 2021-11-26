@@ -13,9 +13,12 @@
       crossorigin="anonymous"
     />
 
-    <title>TSP Delights</title>
+    <title>Rocket eCommerce</title>
   </head>
-  <body>
+
+  <!-- <header><%- include('./sidebars.ejs'); %></header> -->
+
+  <body class="text-center bg-light text-dark">
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
@@ -26,7 +29,11 @@
     ></script>
     <p><strong>Home Page - All Items</strong></p>
     <div class="card" style="width: 18rem">
-      <img class="card-img-top" src="" alt="Card image cap" />
+      <img
+        class="card-img-top"
+        src="/images/<%= itemDetails[0].product_name %>.jpg"
+        alt="Card image cap"
+      />
       <div class="card-body">
         <p class="card-text">
           <strong>
@@ -35,21 +42,24 @@
           >
         </p>
         <p class="card-text">
-          <%= itemDetails[0].summary%> <br />
-          <%= itemDetails[0].weight%>
+          Description: <%= itemDetails[0].summary%> <br />
+          Weight: <%= itemDetails[0].weight%>
         </p>
+        <form
+          action="/item/<%= itemDetails[0].id %>"
+          method="POST"
+          onsubmit="return confirm('Item will be added to cart - please confirm');"
+        >
+          <% console.log(itemDetails) %>
+          <input
+            type="hidden"
+            id="itemID"
+            name="itemID"
+            value="<%= itemDetails[0].id %> "
+          />
+          <input type="submit" value="Add Item" />
+        </form>
       </div>
     </div>
-
-    <form action="/item/<%= itemDetails[0].id %>" method="POST">
-      <% console.log(itemDetails) %>
-      <input
-        type="hidden"
-        id="itemID"
-        name="itemID"
-        value="<%= itemDetails[0].id %> "
-      />
-      <input type="submit" value="Add Item" />
-    </form>
   </body>
 </html>

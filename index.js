@@ -3,6 +3,8 @@ import pg from "pg";
 import jsSHA from "jssha";
 import methodOverride from "method-override";
 import cookieParser from "cookie-parser";
+import path from 'path';
+const __dirname = path.resolve();
 import axios from "axios";
 
 // Initialise DB connection
@@ -15,9 +17,12 @@ const pgConnectionConfigs = {
 };
 const pool = new Pool(pgConnectionConfigs);
 
+
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "/public")));
+app.use(express.static(path.join(__dirname, "/views")));
 app.use(methodOverride("_method"));
 app.use(cookieParser());
 
@@ -55,7 +60,7 @@ const loginAuth = (request, response) => {
       return;
     }
     response.cookie("loggedIn", true);
-    response.cookie("userName", user.email);
+    response.cookie("userEmail", user.email);
     response.cookie("userID", user.id);
     response.redirect("/");
   });
@@ -150,6 +155,11 @@ const categoriesPage = (req, res) => {
       } else {
         // const sqlQuery2 =
         const categories = result.rows;
+        categories.forEach(function(obj) {
+          if (obj.is_hot === true) {
+            obj.category_name = 'HOT ITEMS';
+          }
+        });
         console.log(categories);
         res.render("categories", { categories });
       }
@@ -168,59 +178,85 @@ const addItem = (req, res) => {
   console.log("productid type", typeof productID);
   console.log("userid", userID);
 
-  const sqlQuery =
-    `SELECT o.id AS oid, users.id AS uid, o.status FROM orders AS o INNER JOIN users ON users.id = o.user_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
+  const sqlQuery = `SELECT o.id AS oid, users.id AS uid, o.status FROM orders AS o INNER JOIN users ON users.id = o.user_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
   const sqlQuery2 =
-    "INSERT INTO orders (user_id, status)VALUES ($1, $2) RETURNING *";
+    "INSERT INTO orders (user_id, status) VALUES ($1, $2) RETURNING *";
   const sqlQuery3 =
     "INSERT INTO orders_products (product_id, order_id, quantity) VALUES ($1, $2, $3) RETURNING *";
 
   pool.query(sqlQuery, (err, result) => {
     if (err) {
       console.log("error", err);
-      res.status(500).send(err);
+      result.status(500).send(err);
     } else {
-      console.log("this is running")
+      console.log("this is running");
       if (result.rows.length === 0) {
         pool.query(sqlQuery2, [userID, "cart"], (err, result) => {
           let orderID = result.rows[0].id;
           console.log("results row", result.rows.length);
           if (err) {
             console.log("error", err);
-            res.status(500).send(err);
+            result.status(500).send(err);
           } else {
-            console.log("Success", result);
+            console.log("Success running sqlquery2");
             pool.query(sqlQuery3, [productID, orderID, 1], (err, result) => {
               if (err) {
                 console.log("error", err);
                 res.status(500).send(err);
               } else {
-                console.log("Success", result);
+                console.log("Item added success");
               }
             });
           }
         });
       } else {
-      let orderID = result.rows[0].oid;
-      console.log("orderID", orderID);
-      pool.query(sqlQuery3, [productID, orderID, 1], (err, result) => {
-        if (err) {
-          console.log("error", err);
-          res.status(500).send(err);
-        } else {
-          console.log("Success", result);
-        }
-      });
-    }
+        let orderID = result.rows[0].oid;
+        console.log("orderID", orderID);
+        pool.query(sqlQuery3, [productID, orderID, 1], (err, result) => {
+          if (err) {
+            console.log("error", err);
+            result.status(500).send(err);
+          } else {
+
+            console.log("Item added success");
+          }
+        });
+      }
     }
   });
 };
 
+const logoutUser = (req, res) => {
+  if (req.cookies.loggedIn === "true") {
+    res.clearCookie('userID');
+    res.clearCookie('userEmail');
+    res.clearCookie('loggedIn');
+  }
+  res.redirect('/');
+};
+
+const testFn = (req, res) => {
+  const { id } = req.params;
+  const sqlQuery = "SELECT * FROM products WHERE id = $1";
+  pool.query(sqlQuery, [id], (err, result) => {
+    if (err) {
+      console.log("error", err);
+      res.status(500).send(err);
+    } else {
+      const itemDetails = result.rows;
+      console.log(itemDetails);
+      res.render("test", { itemDetails });
+    }
+  });
+};
+
+app.get("/test/:id", testFn);
 app.get("/", home);
 app.get("/item/:id", itemPage);
 app.post("/item/:id", addItem);
 app.get("/categories/:id", categoriesPage);
 app.get("/login", login);
+app.get("/logout", logoutUser);
 app.post("/login", loginAuth);
 app.get("/signup", signUp);
 app.post("/signup", createNewUser);

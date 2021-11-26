@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, first_name VARCHAR, last_name VARCHAR, user_address VARCHAR, contact VARCHAR, email VARCHAR UNIQUE, password VARCHAR, created_at DATE NOT NULL DEFAULT CURRENT_DATE);
 CREATE TABLE IF NOT EXISTS category (id SERIAL PRIMARY KEY, category_name VARCHAR UNIQUE);
-CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, product_name VARCHAR, category_id INTEGER REFERENCES category (id), price integer, summary VARCHAR, weight VARCHAR, status VARCHAR, is_hot boolean, created_at DATE NOT NULL DEFAULT CURRENT_DATE);
+CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, product_name VARCHAR UNIQUE, category_id INTEGER REFERENCES category (id), price float, summary VARCHAR, weight VARCHAR, status VARCHAR, is_hot boolean, created_at DATE NOT NULL DEFAULT CURRENT_DATE);
 CREATE TABLE IF NOT EXISTS orders (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users (id), status VARCHAR, created_at DATE NOT NULL DEFAULT CURRENT_DATE); 
 CREATE TABLE IF NOT EXISTS orders_products (order_id INTEGER REFERENCES orders (id), product_id INTEGER REFERENCES products (id), quantity INTEGER);
