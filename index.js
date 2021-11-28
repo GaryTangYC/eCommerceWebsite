@@ -3,7 +3,7 @@ import pg from "pg";
 import jsSHA from "jssha";
 import methodOverride from "method-override";
 import cookieParser from "cookie-parser";
-import path from 'path';
+import path from "path";
 const __dirname = path.resolve();
 import axios from "axios";
 
@@ -16,7 +16,6 @@ const pgConnectionConfigs = {
   port: 5432, // Postgres server always runs on this port by default
 };
 const pool = new Pool(pgConnectionConfigs);
-
 
 const app = express();
 app.set("view engine", "ejs");
@@ -32,7 +31,9 @@ app.use(cookieParser());
 
 // Render the login page
 const login = (req, res) => {
-  res.render("login");
+  if(!req.cookies.loggedIn)
+  res.render("login", { page: '/login', loggedOut: true});
+  else res.redirect('/');
 };
 
 // Login authentication based on login data
@@ -98,8 +99,9 @@ const createNewUser = (req, res) => {
 
 //Home page load
 const home = (req, res) => {
+  // if (req.cookies.loggedIn === "true") {
   const sqlQuery =
-    "SELECT c.category_name, p.product_name, p.price, p.summary FROM products AS p INNER JOIN category AS c ON c.id = p.category_id;";
+    "SELECT p.id, c.category_name, p.product_name, p.price, p.summary FROM products AS p INNER JOIN category AS c ON c.id = p.category_id ORDER BY c.category_name ASC;";
   pool.query(sqlQuery, (err, result) => {
     if (err) {
       console.log("error", err);
@@ -132,21 +134,20 @@ const itemPage = (req, res) => {
 const categoriesPage = (req, res) => {
   const { id } = req.params;
   if (id != 1) {
-    const sqlQuery = `SELECT * FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE c.id = $1;`;
+    const sqlQuery = `SELECT p.*, c.id AS cat_ID FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE c.id = $1;`;
 
     pool.query(sqlQuery, [id], (err, result) => {
       if (err) {
         console.log("error", err);
         res.status(500).send(err);
-      } else {
-        // const sqlQuery2 =
+      } else {        
         const categories = result.rows;
         console.log(categories);
         res.render("categories", { categories });
       }
     });
   } else {
-    const sqlQuery = `SELECT * FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE p.is_hot = TRUE;`;
+    const sqlQuery = 'SELECT p.* FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE p.is_hot = TRUE;';
 
     pool.query(sqlQuery, (err, result) => {
       if (err) {
@@ -155,9 +156,9 @@ const categoriesPage = (req, res) => {
       } else {
         // const sqlQuery2 =
         const categories = result.rows;
-        categories.forEach(function(obj) {
+        categories.forEach(function (obj) {
           if (obj.is_hot === true) {
-            obj.category_name = 'HOT ITEMS';
+            obj.category_name = "HOT ITEMS";
           }
         });
         console.log(categories);
@@ -217,7 +218,6 @@ const addItem = (req, res) => {
             console.log("error", err);
             result.status(500).send(err);
           } else {
-
             console.log("Item added success");
           }
         });
@@ -228,11 +228,11 @@ const addItem = (req, res) => {
 
 const logoutUser = (req, res) => {
   if (req.cookies.loggedIn === "true") {
-    res.clearCookie('userID');
-    res.clearCookie('userEmail');
-    res.clearCookie('loggedIn');
+    res.clearCookie("userID");
+    res.clearCookie("userEmail");
+    res.clearCookie("loggedIn");
   }
-  res.redirect('/');
+  res.redirect("/");
 };
 
 const testFn = (req, res) => {
@@ -250,6 +250,54 @@ const testFn = (req, res) => {
   });
 };
 
+// cart page load
+const cartPage = (req, res) => {
+  console.log('req.cookies',req.cookies)
+  if (req.cookies.loggedIn === undefined) {    
+    res.redirect("/login")
+  } else {
+  const userID = req.cookies.userID;
+  const sqlQuery = `SELECT o.id AS oid, o.user_id AS uid, o.status, orders_products.product_id, products.* FROM orders AS o INNER JOIN orders_products ON orders_products.order_id = o.id  INNER JOIN products on products.id = orders_products.product_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
+
+  pool.query(sqlQuery, (err, result) => {
+    if (err) {
+      console.log("error", err);
+      res.status(500).send(err);
+    } else {
+      if (result.rows.length === 0) {
+        res.render("cartEmpty");
+      } else {
+        const cartDetails = result.rows;
+        console.log(cartDetails);
+        res.render("cart", { cartDetails });
+      }
+    }
+  });
+  }
+};
+
+const finalizeCart = (req, res) => {
+  const objOrderID = Object.values(req.body);
+  const orderID = Number(objOrderID);
+  const userID = req.cookies.userID;
+
+  console.log("orderID", orderID);
+  console.log("orderID type", typeof orderID);
+  console.log("userID", userID);
+  console.log("userID type", typeof userID);
+
+  const sqlQuery = `UPDATE orders SET status = 'complete' WHERE orders.id = ${orderID};`;
+
+  pool.query(sqlQuery, (err, result) => {
+    if (err) {
+      console.log("error", err);
+      res.status(500).send(err);
+    } else {
+      res.redirect("/");
+    }
+  });
+};
+
 app.get("/test/:id", testFn);
 app.get("/", home);
 app.get("/item/:id", itemPage);
@@ -260,4 +308,7 @@ app.get("/logout", logoutUser);
 app.post("/login", loginAuth);
 app.get("/signup", signUp);
 app.post("/signup", createNewUser);
+app.get("/cart", cartPage);
+app.post("/cart", finalizeCart);
+
 app.listen(3004);

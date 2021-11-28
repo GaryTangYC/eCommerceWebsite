@@ -19,10 +19,10 @@
   </head>
 
   <body>
-    <p><strong><%= categories[0].category_name %></strong></p>
+    <p><strong>Cart</strong></p>
 
     <div class="row row-cols-1 row-cols-md-3 g-4">
-      <% categories.forEach((item) => { %>
+      <% cartDetails.forEach((item) => { %>
       <div class="col">
         <div class="card">
           <img
@@ -34,16 +34,26 @@
             <h5 class="card-title"><%=item.product_name %></h5>
             <h3 class="card-text">$<%=item.price %></h3>
             <p class="card-text"><%= item.summary%> <br /></p>
-            <a href="/item/<%= item.id %>" class="btn btn-primary"
-              >Item Details</a
-            >
           </div>
         </div>
       </div>
       <% }); %>
     </div>
+    <br />
+    <form
+      action="/cart"
+      method="POST"
+      onsubmit="return confirm('Cart items will be finalized - please confirm');"
+    >
+      <input
+        type="hidden"
+        name="orderID[]"
+        value="<%= cartDetails[0].oid %> "
+      />
+      <input type="submit" value="Finalize Cart" />
+    </form>
   </body>
-
+  <br /><br /><br />
   <footer>
     <p><a href="/">Return to main page</a></p>
   </footer>
