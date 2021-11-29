@@ -91,27 +91,31 @@
         </ul>
       </nav>
       <div id="content">
-        <p><strong>Home Page - All Items</strong></p>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-          <% itemNames.forEach((item)=> { %>
-          <div class="col-auto mb-3">
-            <div class="card">
-              <img
-                class="card-img-top"
-                src="/images/<%= item.product_name %>.jpg"
-                alt="Card image cap"
-              />
-              <div class="card-body">
-                <h5 class="card-title"><%=item.product_name %></h5>
-                <h3 class="card-text">$<%=item.price %></h3>
-                <p class="card-text"><%= item.summary%> <br /></p>
-                <a href="/item/<%= item.id %>" class="btn btn-primary"
-                  >Item Details</a
-                >
-              </div>
-            </div>
-          </div>
-          <% }); %>
+        <p><strong>Profile Page</strong></p>
+
+        <br />
+        <p>Orders Summary</p>
+        <div class="table-responsive">
+          <table class="table table-info table-bordered table-hover">
+            <thead>
+              <tr>
+                <th scope="col">Order#</th>
+                <th scope="col">Status</th>
+                <th scope="col">Product Name</th>
+                <th scope="col">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orderDetails.forEach((order) => { %>
+              <tr>
+                <td><%= order.orderid %></td>
+                <td><%= order.status %></td>
+                <td><%= order.product_name %></td>
+                <td><%= order.price %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

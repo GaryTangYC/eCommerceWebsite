@@ -25,15 +25,24 @@ app.use(express.static(path.join(__dirname, "/views")));
 app.use(methodOverride("_method"));
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  req.isUserLoggedIn = false;
+
+  if (req.cookies.loggedIn && req.cookies.userID) {
+    req.isUserLoggedIn = true;
+  }
+  next();
+});
+
 /********
  **ROUTE**
  *********/
 
 // Render the login page
 const login = (req, res) => {
-  if(!req.cookies.loggedIn)
-  res.render("login", { page: '/login', loggedOut: true});
-  else res.redirect('/');
+  if (!req.cookies.loggedIn)
+    res.render("login", { page: "/login", loggedOut: true });
+  else res.redirect("/");
 };
 
 // Login authentication based on login data
@@ -99,7 +108,8 @@ const createNewUser = (req, res) => {
 
 //Home page load
 const home = (req, res) => {
-  // if (req.cookies.loggedIn === "true") {
+  console.log("cookies", req.cookies);
+
   const sqlQuery =
     "SELECT p.id, c.category_name, p.product_name, p.price, p.summary FROM products AS p INNER JOIN category AS c ON c.id = p.category_id ORDER BY c.category_name ASC;";
   pool.query(sqlQuery, (err, result) => {
@@ -109,7 +119,7 @@ const home = (req, res) => {
     } else {
       let itemNames = result.rows;
       console.log(result.rows);
-      res.render("home", { itemNames });
+      res.render("home", { itemNames, isUserLoggedIn: req.isUserLoggedIn });
     }
   });
 };
@@ -125,7 +135,7 @@ const itemPage = (req, res) => {
     } else {
       const itemDetails = result.rows;
       console.log(itemDetails);
-      res.render("item", { itemDetails });
+      res.render("item", { itemDetails, isUserLoggedIn: req.isUserLoggedIn });
     }
   });
 };
@@ -140,14 +150,18 @@ const categoriesPage = (req, res) => {
       if (err) {
         console.log("error", err);
         res.status(500).send(err);
-      } else {        
+      } else {
         const categories = result.rows;
         console.log(categories);
-        res.render("categories", { categories });
+        res.render("categories", {
+          categories,
+          isUserLoggedIn: req.isUserLoggedIn,
+        });
       }
     });
   } else {
-    const sqlQuery = 'SELECT p.* FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE p.is_hot = TRUE;';
+    const sqlQuery =
+      "SELECT p.* FROM products AS p INNER JOIN category AS c ON c.id = p.category_id WHERE p.is_hot = TRUE;";
 
     pool.query(sqlQuery, (err, result) => {
       if (err) {
@@ -252,27 +266,27 @@ const testFn = (req, res) => {
 
 // cart page load
 const cartPage = (req, res) => {
-  console.log('req.cookies',req.cookies)
-  if (req.cookies.loggedIn === undefined) {    
-    res.redirect("/login")
+  console.log("req.cookies", req.cookies);
+  if (req.cookies.loggedIn === undefined) {
+    res.redirect("/login");
   } else {
-  const userID = req.cookies.userID;
-  const sqlQuery = `SELECT o.id AS oid, o.user_id AS uid, o.status, orders_products.product_id, products.* FROM orders AS o INNER JOIN orders_products ON orders_products.order_id = o.id  INNER JOIN products on products.id = orders_products.product_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
+    const userID = req.cookies.userID;
+    const sqlQuery = `SELECT o.id AS oid, o.user_id AS uid, o.status, orders_products.product_id, products.* FROM orders AS o INNER JOIN orders_products ON orders_products.order_id = o.id  INNER JOIN products on products.id = orders_products.product_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
 
-  pool.query(sqlQuery, (err, result) => {
-    if (err) {
-      console.log("error", err);
-      res.status(500).send(err);
-    } else {
-      if (result.rows.length === 0) {
-        res.render("cartEmpty");
+    pool.query(sqlQuery, (err, result) => {
+      if (err) {
+        console.log("error", err);
+        res.status(500).send(err);
       } else {
-        const cartDetails = result.rows;
-        console.log(cartDetails);
-        res.render("cart", { cartDetails });
+        if (result.rows.length === 0) {
+          res.render("cartEmpty");
+        } else {
+          const cartDetails = result.rows;
+          console.log(cartDetails);
+          res.render("cart", { cartDetails });
+        }
       }
-    }
-  });
+    });
   }
 };
 
@@ -298,6 +312,28 @@ const finalizeCart = (req, res) => {
   });
 };
 
+// profile page load
+const profilePage = (req, res) => {
+  console.log("req.cookies", req.cookies);
+  if (req.cookies.loggedIn === undefined) {
+    res.redirect("/login");
+  } else {
+    const userID = req.cookies.userID;
+    const sqlQuery = `SELECT o.id AS orderID, o.status, p.product_name, p.price FROM orders AS o INNER JOIN orders_products AS o_p ON o.id = o_p.order_id INNER JOIN products as p on o_p.product_id = p.id WHERE o.user_id = ${userID} ORDER BY o.status ASC, orderID DESC;`;
+
+    pool.query(sqlQuery, (err, result) => {
+      if (err) {
+        console.log("error", err);
+        res.status(500).send(err);
+      } else {
+        const orderDetails = result.rows;
+        console.log(orderDetails);
+        res.render("profile", { orderDetails });
+      }
+    });
+  }
+};
+
 app.get("/test/:id", testFn);
 app.get("/", home);
 app.get("/item/:id", itemPage);
@@ -310,5 +346,6 @@ app.get("/signup", signUp);
 app.post("/signup", createNewUser);
 app.get("/cart", cartPage);
 app.post("/cart", finalizeCart);
+app.get("/profile", profilePage);
 
 app.listen(3004);

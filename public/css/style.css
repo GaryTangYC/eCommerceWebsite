@@ -11,6 +11,7 @@
 }
 
 #sidebar {
+  min-height: 100vh;
   min-width: 250px;
   max-width: 250px;
   background-color: grey;
@@ -22,4 +23,14 @@ body {
 
 .navbar {
   background-color: rgb(255, 120, 120);
+}
+
+#content {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#table-responsive {
+  min-width: 100vh;
+  margin: auto;
 }

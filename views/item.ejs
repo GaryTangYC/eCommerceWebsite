@@ -13,11 +13,6 @@
       crossorigin="anonymous"
     />
     <link href="/css/style.css" rel="stylesheet" />
-    <title>Rocket eCommerce</title>
-  </head>
-
-  <body>
-    <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script
@@ -25,69 +20,109 @@
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
+    <title>Rocket eCommerce</title>
+  </head>
+  <header>
+    <nav class="navbar fixed-top navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <img src="/common/rocket.png" width="30" height="30" />
+          Rocket eCommerce
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link active" aria-current="page" href="/">Home</a>
+            <a class="nav-link" href="/cart">Cart</a>
+            <% if (!locals.isUserLoggedIn) { %>
+            <a class="nav-link" href="/signup">Signup</a>
+            <a class="nav-link" href="/login">Login</a>
+            <% } else { %>
+            <a class="nav-link" href="/profile">Profile</a>
+            <a class="nav-link" href="/logout">Logout</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
 
+  <body>
     <div class="wrapper">
       <nav id="sidebar">
-        <div class="sidebar-header"></div>
+        <div class="p-3 mb-2 text-white"></div>
 
-        <ul class="nav flex-sm-column justify-content-center">
+        <ul class="nav flex-sm-column justify-content-center text-white">
           <li>
-            <a href="/" class="nav-link text-dark"> Home </a>
+            <a href="/" class="nav-link text-light"> Home </a>
           </li>
           <li>
-            <a href="/categories/1" class="nav-link text-dark"> Hot Items </a>
+            <a href="/categories/1" class="nav-link text-light"> Hot Items </a>
           </li>
           <li>
-            <a href="/categories/2" class="nav-link text-dark"> Snacks </a>
+            <a href="/categories/2" class="nav-link text-light"> Snacks </a>
           </li>
           <li>
-            <a href="/categories/3" class="nav-link text-dark"> Beverages </a>
+            <a href="/categories/3" class="nav-link text-light"> Beverages </a>
           </li>
           <li>
-            <a href="/categories/4" class="nav-link text-dark"> Ready To Eat</a>
+            <a href="/categories/4" class="nav-link text-light">
+              Ready To Eat</a
+            >
           </li>
           <li>
-            <a href="/categories/5" class="nav-link text-dark"> Dairies</a>
+            <a href="/categories/5" class="nav-link text-light"> Dairies</a>
           </li>
           <li>
-            <a href="/categories/6" class="nav-link text-dark"> Household</a>
+            <a href="/categories/6" class="nav-link text-light"> Household</a>
           </li>
         </ul>
       </nav>
-      <div id="content">
-        <p><strong>Home Page - All Items</strong></p>
-
-        <div class="card" style="width: 18rem">
-          <img
-            class="card-img-top"
-            src="/images/<%= itemDetails[0].product_name %>.jpg"
-            alt="Card image cap"
-          />
-          <div class="card-body">
-            <p class="card-text">
-              <strong>
-                <%= itemDetails[0].product_name %> <br />
-                $<%= itemDetails[0].price %></strong
+      <div id="content" style="padding-left: 20px">
+        <p><strong>Detailed Item</strong></p>
+        <div class="col">
+          <div class="card" style="width: 18rem">
+            <img
+              class="card-img-top"
+              src="/images/<%= itemDetails[0].product_name %>.jpg"
+              alt="Card image cap"
+            />
+            <div class="card-body">
+              <p class="card-text">
+                <strong>
+                  <%= itemDetails[0].product_name %> <br />
+                  $<%= itemDetails[0].price %></strong
+                >
+              </p>
+              <p class="card-text">
+                Description: <%= itemDetails[0].summary%> <br />
+                Weight: <%= itemDetails[0].weight%>
+              </p>
+              <form
+                action="/item/<%= itemDetails[0].id %>"
+                method="POST"
+                onsubmit="return confirm('Item will be added to cart - please confirm');"
               >
-            </p>
-            <p class="card-text">
-              Description: <%= itemDetails[0].summary%> <br />
-              Weight: <%= itemDetails[0].weight%>
-            </p>
-            <form
-              action="/item/<%= itemDetails[0].id %>"
-              method="POST"
-              onsubmit="return confirm('Item will be added to cart - please confirm');"
-            >
-              <% console.log(itemDetails) %>
-              <input
-                type="hidden"
-                id="itemID"
-                name="itemID"
-                value="<%= itemDetails[0].id %> "
-              />
-              <input type="submit" value="Add Item" />
-            </form>
+                <% console.log(itemDetails) %>
+                <input
+                  type="hidden"
+                  id="itemID"
+                  name="itemID"
+                  value="<%= itemDetails[0].id %> "
+                />
+                <input type="submit" value="Add Item" />
+              </form>
+            </div>
           </div>
         </div>
       </div>

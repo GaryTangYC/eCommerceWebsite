@@ -12,49 +12,118 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
-
     <link href="/css/style.css" rel="stylesheet" />
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
 
     <title>Rocket eCommerce</title>
   </head>
 
-  <body>
-    <p><strong>Cart</strong></p>
-
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-      <% cartDetails.forEach((item) => { %>
-      <div class="col">
-        <div class="card">
-          <img
-            class="card-img-top"
-            src="/images/<%= item.product_name %>.jpg"
-            alt="Card image cap"
-          />
-          <div class="card-body">
-            <h5 class="card-title"><%=item.product_name %></h5>
-            <h3 class="card-text">$<%=item.price %></h3>
-            <p class="card-text"><%= item.summary%> <br /></p>
+  <header>
+    <nav class="navbar fixed-top navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <img src="/common/rocket.png" width="30" height="30" />
+          Rocket eCommerce
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link active" aria-current="page" href="/">Home</a>
+            <a class="nav-link" href="/cart">Cart</a>
+            <% if (!locals.isUserLoggedIn) { %>
+            <a class="nav-link" href="/signup">Signup</a>
+            <a class="nav-link" href="/login">Login</a>
+            <% } else { %>
+            <a class="nav-link" href="/profile">Profile</a>
+            <a class="nav-link" href="/logout">Logout</a>
+            <% } %>
           </div>
         </div>
       </div>
-      <% }); %>
+    </nav>
+  </header>
+
+  <body>
+    <div class="wrapper">
+      <nav id="sidebar">
+        <div class="p-3 mb-2 text-white"></div>
+
+        <ul class="nav flex-sm-column justify-content-center text-white">
+          <li>
+            <a href="/" class="nav-link text-light"> Home </a>
+          </li>
+          <li>
+            <a href="/categories/1" class="nav-link text-light"> Hot Items </a>
+          </li>
+          <li>
+            <a href="/categories/2" class="nav-link text-light"> Snacks </a>
+          </li>
+          <li>
+            <a href="/categories/3" class="nav-link text-light"> Beverages </a>
+          </li>
+          <li>
+            <a href="/categories/4" class="nav-link text-light">
+              Ready To Eat</a
+            >
+          </li>
+          <li>
+            <a href="/categories/5" class="nav-link text-light"> Dairies</a>
+          </li>
+          <li>
+            <a href="/categories/6" class="nav-link text-light"> Household</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="content">
+        <p><strong>Cart</strong></p>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <% cartDetails.forEach((item)=> { %>
+          <div class="col">
+            <div class="card">
+              <img
+                class="card-img-top"
+                src="/images/<%= item.product_name %>.jpg"
+                alt="Card image cap"
+              />
+              <div class="card-body">
+                <h5 class="card-title"><%=item.product_name %></h5>
+                <h3 class="card-text">$<%=item.price %></h3>
+                <p class="card-text"><%= item.summary%> <br /></p>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        <br />
+        <form
+          action="/cart"
+          method="POST"
+          onsubmit="return confirm('Cart items will be finalized - please confirm');"
+        >
+          <input
+            type="hidden"
+            name="orderID[]"
+            value="<%= cartDetails[0].oid %> "
+          />
+          <input type="submit" value="Finalize Cart" />
+        </form>
+      </div>
     </div>
-    <br />
-    <form
-      action="/cart"
-      method="POST"
-      onsubmit="return confirm('Cart items will be finalized - please confirm');"
-    >
-      <input
-        type="hidden"
-        name="orderID[]"
-        value="<%= cartDetails[0].oid %> "
-      />
-      <input type="submit" value="Finalize Cart" />
-    </form>
   </body>
-  <br /><br /><br />
-  <footer>
-    <p><a href="/">Return to main page</a></p>
-  </footer>
 </html>
