@@ -5,7 +5,7 @@ import methodOverride from "method-override";
 import cookieParser from "cookie-parser";
 import path from "path";
 const __dirname = path.resolve();
-import axios from "axios";
+// import axios from "axios";
 
 // Initialise DB connection
 const { Pool } = pg;
@@ -165,7 +165,6 @@ const categoriesPage = (req, res) => {
 
     pool.query(sqlQuery, (err, result) => {
       if (err) {
-        console.log("error", err);
         res.status(500).send(err);
       } else {
         // const sqlQuery2 =
@@ -175,7 +174,6 @@ const categoriesPage = (req, res) => {
             obj.category_name = "HOT ITEMS";
           }
         });
-        console.log(categories);
         res.render("categories", { categories });
       }
     });
@@ -188,11 +186,6 @@ const addItem = (req, res) => {
   const productID = Number(objProductID);
   const userID = req.cookies.userID;
 
-  console.log("obj product", objProductID);
-  console.log("productid values", productID);
-  console.log("productid type", typeof productID);
-  console.log("userid", userID);
-
   const sqlQuery = `SELECT o.id AS oid, users.id AS uid, o.status FROM orders AS o INNER JOIN users ON users.id = o.user_id WHERE o.status = 'cart' AND o.user_id = ${userID}`;
   const sqlQuery2 =
     "INSERT INTO orders (user_id, status) VALUES ($1, $2) RETURNING *";
@@ -204,23 +197,17 @@ const addItem = (req, res) => {
       console.log("error", err);
       result.status(500).send(err);
     } else {
-      console.log("this is running");
       if (result.rows.length === 0) {
         pool.query(sqlQuery2, [userID, "cart"], (err, result) => {
           let orderID = result.rows[0].id;
-          console.log("results row", result.rows.length);
           if (err) {
-            console.log("error", err);
             result.status(500).send(err);
           } else {
-            console.log("Success running sqlquery2");
+
             pool.query(sqlQuery3, [productID, orderID, 1], (err, result) => {
-              if (err) {
-                console.log("error", err);
+              if (err) { 
                 res.status(500).send(err);
-              } else {
-                console.log("Item added success");
-              }
+              } return res.json({ success: true });
             });
           }
         });
